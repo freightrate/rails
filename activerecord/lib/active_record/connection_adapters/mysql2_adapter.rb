@@ -11,8 +11,13 @@ module ActiveRecord
 
       config[:username] = 'root' if config[:username].nil?
       config[:flags] ||= 0
+
       if Mysql2::Client.const_defined? :FOUND_ROWS
-        config[:flags] |= Mysql2::Client::FOUND_ROWS
+        if config[:flags].kind_of? Array
+          config[:flags].push "FOUND_ROWS".freeze
+        else
+          config[:flags] |= Mysql2::Client::FOUND_ROWS          
+        end
       end
 
       client = Mysql2::Client.new(config)
@@ -94,33 +99,15 @@ module ActiveRecord
       # DATABASE STATEMENTS ======================================
       #++
 
-      # FIXME: re-enable the following once a "better" query_cache solution is in core
-      #
-      # The overrides below perform much better than the originals in AbstractAdapter
-      # because we're able to take advantage of mysql2's lazy-loading capabilities
-      #
-      # # Returns a record hash with the column names as keys and column values
-      # # as values.
-      # def select_one(sql, name = nil)
-      #   result = execute(sql, name)
-      #   result.each(as: :hash) do |r|
-      #     return r
-      #   end
-      # end
-      #
-      # # Returns a single value from a record
-      # def select_value(sql, name = nil)
-      #   result = execute(sql, name)
-      #   if first = result.first
-      #     first.first
-      #   end
-      # end
-      #
-      # # Returns an array of the values of the first column in a select:
-      # #   select_values("SELECT id FROM companies LIMIT 3") => [1,2,3]
-      # def select_values(sql, name = nil)
-      #   execute(sql, name).map { |row| row.first }
-      # end
+      # Returns a record hash with the column names as keys and column values
+      # as values.
+      def select_one(arel, name = nil, binds = [])
+        arel, binds = binds_from_relation(arel, binds)
+        execute(to_sql(arel, binds), name).each(as: :hash) do |row|
+          @connection.next_result while @connection.more_results?
+          return row
+        end
+      end
 
       # Returns an array of arrays containing the field values.
       # Order is the same as that returned by +columns+.
@@ -148,12 +135,6 @@ module ActiveRecord
       end
 
       alias exec_without_stmt exec_query
-
-      def insert_sql(sql, name = nil, pk = nil, id_value = nil, sequence_name = nil)
-        super
-        id_value || @connection.last_id
-      end
-      alias :create :insert_sql
 
       def exec_insert(sql, name, binds, pk = nil, sequence_name = nil)
         execute to_sql(sql, binds), name

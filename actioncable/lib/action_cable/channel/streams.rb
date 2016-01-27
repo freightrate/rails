@@ -75,11 +75,11 @@ module ActionCable
         callback ||= default_stream_callback(broadcasting)
         streams << [ broadcasting, callback ]
 
-        EM.next_tick do
-          pubsub.subscribe(broadcasting, &callback).callback do |reply|
+        Concurrent.global_io_executor.post do
+          pubsub.subscribe(broadcasting, callback, lambda do
             transmit_subscription_confirmation
             logger.info "#{self.class.name} is streaming from #{broadcasting}"
-          end
+          end)
         end
       end
 
@@ -92,7 +92,7 @@ module ActionCable
 
       def stop_all_streams
         streams.each do |broadcasting, callback|
-          pubsub.unsubscribe_proc broadcasting, callback
+          pubsub.unsubscribe broadcasting, callback
           logger.info "#{self.class.name} stopped streaming from #{broadcasting}"
         end.clear
       end

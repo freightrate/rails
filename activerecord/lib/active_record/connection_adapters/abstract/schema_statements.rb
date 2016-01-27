@@ -957,15 +957,19 @@ module ActiveRecord
       def dump_schema_information #:nodoc:
         sm_table = ActiveRecord::Migrator.schema_migrations_table_name
 
-        ActiveRecord::SchemaMigration.order('version').map { |sm|
-          "INSERT INTO #{sm_table} (version) VALUES ('#{sm.version}');"
-        }.join "\n\n"
+        sql = "INSERT INTO #{sm_table} (version) VALUES "
+        sql << ActiveRecord::SchemaMigration.order('version').pluck(:version).map {|v| "('#{v}')" }.join(', ')
+        sql << ";\n\n"
       end
 
       # Should not be called normally, but this operation is non-destructive.
       # The migrations module handles this automatically.
       def initialize_schema_migrations_table
         ActiveRecord::SchemaMigration.create_table
+      end
+
+      def initialize_internal_metadata_table
+        ActiveRecord::InternalMetadata.create_table
       end
 
       def assume_migrated_upto_version(version, migrations_paths)
@@ -983,14 +987,12 @@ module ActiveRecord
           execute "INSERT INTO #{sm_table} (version) VALUES ('#{version}')"
         end
 
-        inserted = Set.new
-        (versions - migrated).each do |v|
-          if inserted.include?(v)
-            raise "Duplicate migration #{v}. Please renumber your migrations to resolve the conflict."
-          elsif v < version
-            execute "INSERT INTO #{sm_table} (version) VALUES ('#{v}')"
-            inserted << v
+        inserting = (versions - migrated).select {|v| v < version}
+        if inserting.any?
+          if (duplicate = inserting.detect {|v| inserting.count(v) > 1})
+            raise "Duplicate migration #{duplicate}. Please renumber your migrations to resolve the conflict."
           end
+          execute "INSERT INTO #{sm_table} (version) VALUES #{inserting.map {|v| '(#{v})'}.join(', ') }"
         end
       end
 
@@ -1028,11 +1030,12 @@ module ActiveRecord
       end
 
       # Given a set of columns and an ORDER BY clause, returns the columns for a SELECT DISTINCT.
-      # Both PostgreSQL and Oracle overrides this for custom DISTINCT syntax - they
+      # PostgreSQL, MySQL, and Oracle overrides this for custom DISTINCT syntax - they
       # require the order columns appear in the SELECT.
       #
       #   columns_for_distinct("posts.id", ["posts.created_at desc"])
-      def columns_for_distinct(columns, orders) #:nodoc:
+      #
+      def columns_for_distinct(columns, orders) # :nodoc:
         columns
       end
 

@@ -75,7 +75,7 @@ module Rails
         class_option :edge,               type: :boolean, default: false,
                                           desc: "Setup the #{name} with Gemfile pointing to Rails repository"
 
-        class_option :rc,                 type: :string, default: false,
+        class_option :rc,                 type: :string, default: nil,
                                           desc: "Path to file containing extra configuration options for rails command"
 
         class_option :no_rc,              type: :boolean, default: false,
@@ -117,6 +117,7 @@ module Rails
          javascript_gemfile_entry,
          jbuilder_gemfile_entry,
          psych_gemfile_entry,
+         cable_gemfile_entry,
          @extra_entries].flatten.find_all(&@gem_filter)
       end
 
@@ -281,6 +282,8 @@ module Rails
         return [] if options[:skip_sprockets]
 
         gems = []
+        gems << GemfileEntry.version('sass-rails', '~> 5.0',
+                                     'Use SCSS for stylesheets')
 
         gems << GemfileEntry.version('uglifier',
                                    '>= 1.3.0',
@@ -335,6 +338,15 @@ module Rails
         comment = 'Use Psych as the YAML engine, instead of Syck, so serialized ' \
                   'data can be read safely from different rubies (see http://git.io/uuLVag)'
         GemfileEntry.new('psych', '~> 2.0', comment, platforms: :rbx)
+      end
+
+      def cable_gemfile_entry
+        return [] if options[:skip_action_cable]
+        comment = 'Action Cable dependencies for the Redis adapter'
+        gems = []
+        gems << GemfileEntry.new("em-hiredis", '~> 0.3.0', comment)
+        gems << GemfileEntry.new("redis", '~> 3.0', comment)
+        gems
       end
 
       def bundle_command(command)

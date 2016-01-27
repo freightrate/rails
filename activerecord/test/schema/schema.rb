@@ -104,6 +104,7 @@ ActiveRecord::Schema.define do
     t.column :author_visibility, :integer, default: 0
     t.column :illustrator_visibility, :integer, default: 0
     t.column :font_size, :integer, default: 0
+    t.column :cover, :string, default: 'hard'
   end
 
   create_table :booleans, force: true do |t|
@@ -975,6 +976,8 @@ ActiveRecord::Schema.define do
     t.integer :employable_id
     t.string :employable_type
     t.integer :department_id
+    t.string :employable_list_type
+    t.integer :employable_list_id
   end
   create_table :recipes, force: true do |t|
     t.integer :chef_id

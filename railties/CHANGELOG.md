@@ -1,3 +1,17 @@
+*   Bring back `TEST=` env for `rake test` task.
+
+    *Yves Senn*
+
+*   Specify log file names or all logs to clear `rake log:clear`
+
+    Specify which logs to clear when using the `rake log:clear` task, e.g. `rake log:clear LOGS=test,staging`
+
+    Clear all logs from log/*.log e.g. `rake log:clear LOGS=all`
+
+    By default `rake log:clear` clears standard environment log files i.e. 'development,test,production'
+
+    *Pramod Shinde*
+
 *   Fix using `add_source` with a block after using `gem` in a custom generator.
 
     *Will Fisher*
@@ -201,7 +215,7 @@
 *   Fix STATS_DIRECTORIES already defined warning when running rake from within
     the top level directory of an engine that has a test app.
 
-    Fixes #20510
+    Fixes #20510.
 
     *Ersin Akinci*
 
@@ -249,13 +263,13 @@
     middleware for API apps & generators generates the right files,
     folders and configurations.
 
-    *Santiago Pastorino & Jorge Bejar*
+    *Santiago Pastorino*, *Jorge Bejar*
 
 *   Make generated scaffold functional tests work inside engines.
 
     *Yuji Yaginuma*
 
-*   Generator a `.keep` file in the `tmp` folder by default as many scripts
+*   Generate a `.keep` file in the `tmp` folder by default as many scripts
     assume the existence of this folder and most would fail if it is absent.
 
     See #20299.
@@ -321,7 +335,7 @@
 *   Created rake restart task. Restarts your Rails app by touching the
     `tmp/restart.txt`.
 
-    Fixes #18876.
+    See #18876.
 
     *Hyonjee Joo*
 

@@ -7,8 +7,8 @@ module ActiveRecord
     extend ActiveSupport::Concern
 
     included do
-      class_attribute :_reflections
-      class_attribute :aggregate_reflections
+      class_attribute :_reflections, instance_writer: false
+      class_attribute :aggregate_reflections, instance_writer: false
       self._reflections = {}
       self.aggregate_reflections = {}
     end
@@ -545,7 +545,7 @@ module ActiveRecord
           end
         end
 
-        # returns either nil or the inverse association name that it finds.
+        # returns either false or the inverse association name that it finds.
         def automatic_inverse_of
           if can_find_inverse_of_automatically?(self)
             inverse_name = ActiveSupport::Inflector.underscore(options[:as] || active_record.name.demodulize).to_sym

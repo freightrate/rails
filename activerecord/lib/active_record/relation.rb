@@ -99,7 +99,7 @@ module ActiveRecord
       end
 
       substitutes = values.map do |(arel_attr, _)|
-        [arel_attr, connection.substitute_at(klass.columns_hash[arel_attr.name])]
+        [arel_attr, Arel::Nodes::BindParam.new]
       end
 
       [substitutes, binds]
@@ -132,7 +132,7 @@ module ActiveRecord
     # ==== Examples
     #
     #   users = User.where(name: 'Oscar')
-    #   users.create # => #<User id: 3, name: "oscar", ...>
+    #   users.create # => #<User id: 3, name: "Oscar", ...>
     #
     #   users.create(name: 'fxn')
     #   users.create # => #<User id: 4, name: "fxn", ...>
@@ -371,11 +371,11 @@ module ActiveRecord
 
       stmt.set Arel.sql(@klass.send(:sanitize_sql_for_assignment, updates))
       stmt.table(table)
-      stmt.key = table[primary_key]
 
       if joins_values.any?
-        @klass.connection.join_to_update(stmt, arel)
+        @klass.connection.join_to_update(stmt, arel, table[primary_key])
       else
+        stmt.key = table[primary_key]
         stmt.take(arel.limit)
         stmt.order(*arel.orders)
         stmt.wheres = arel.constraints

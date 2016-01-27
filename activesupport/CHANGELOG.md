@@ -1,3 +1,23 @@
+*   Match `HashWithIndifferentAccess#default`'s behaviour with `Hash#default`.
+
+    *David Cornu*
+
+*   Adds `:exception_object` key to `ActiveSupport::Notifications::Instrumenter`
+    payload when an exception is raised.
+
+    Adds new key/value pair to payload when an exception is raised:
+    e.g. `:exception_object => #<RuntimeError: FAIL>`.
+
+    *Ryan T. Hosford*
+
+*   Support extended grapheme clusters and UAX 29.
+
+    *Adam Roben*
+
+*   Add petabyte and exabyte numeric conversion.
+
+    *Akshay Vishnoi*
+
 ## Rails 5.0.0.beta1 (December 18, 2015) ##
 
 *   Add thread_m/cattr_accessor/reader/writer suite of methods for declaring class and module variables that live per-thread.
@@ -10,14 +30,14 @@
     module Current
       thread_mattr_accessor :account
       thread_mattr_accessor :user
-      
+
       def self.reset() self.account = self.user = nil end
     end
 
-    class ApplicationController < ActiveController::Base
+    class ApplicationController < ActionController::Base
       before_action :set_current
       after_action { Current.reset }
-    
+
       private
         def set_current
           Current.account = Account.find(params[:account_id])
@@ -34,7 +54,7 @@
     class Message < ApplicationRecord
       has_many :events
       after_create :track_created
-    
+
       private
         def track_created
           events.create! origin: self, action: :create
@@ -58,9 +78,9 @@
 
     *Yuichiro Kaneko*
 
-*   `ActiveSupport::Cache::Store#namespaced_key`, 
-    `ActiveSupport::Cache::MemCachedStore#escape_key`, and 
-    `ActiveSupport::Cache::FileStore#key_file_path` 
+*   `ActiveSupport::Cache::Store#namespaced_key`,
+    `ActiveSupport::Cache::MemCachedStore#escape_key`, and
+    `ActiveSupport::Cache::FileStore#key_file_path`
     are deprecated and replaced with `normalize_key` that now calls `super`.
 
     `ActiveSupport::Cache::LocaleCache#set_cache_value` is deprecated and replaced with `write_cache_value`.
@@ -119,7 +139,7 @@
 
     *Konstantinos Rousis*
 
-*   Handle invalid UTF-8 strings when HTML escaping
+*   Handle invalid UTF-8 strings when HTML escaping.
 
     Use `ActiveSupport::Multibyte::Unicode.tidy_bytes` to handle invalid UTF-8
     strings in `ERB::Util.unwrapped_html_escape` and `ERB::Util.html_escape_once`.
@@ -160,7 +180,7 @@
 
 *   Short-circuit `blank?` on date and time values since they are never blank.
 
-    Fixes #21657
+    Fixes #21657.
 
     *Andrew White*
 
@@ -198,7 +218,7 @@
 *   ActiveSupport::HashWithIndifferentAccess `select` and `reject` will now return
     enumerator if called without block.
 
-    Fixes #20095
+    Fixes #20095.
 
     *Bernard Potocki*
 
@@ -212,11 +232,11 @@
 
     *Simon Eskildsen*
 
-*   Fix setting `default_proc` on `HashWithIndifferentAccess#dup`
+*   Fix setting `default_proc` on `HashWithIndifferentAccess#dup`.
 
     *Simon Eskildsen*
 
-*   Fix a range of values for parameters of the Time#change
+*   Fix a range of values for parameters of the Time#change.
 
     *Nikolay Kondratyev*
 
@@ -228,7 +248,7 @@
     *Kevin Deisz*
 
 *   Add a bang version to `ActiveSupport::OrderedOptions` get methods which will raise
-    an `KeyError` if the value is `.blank?`
+    an `KeyError` if the value is `.blank?`.
 
     Before:
 

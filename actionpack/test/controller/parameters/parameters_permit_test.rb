@@ -294,8 +294,16 @@ class ParametersPermitTest < ActiveSupport::TestCase
   end
 
   test "to_unsafe_h returns unfiltered params" do
-    assert @params.to_h.is_a? ActiveSupport::HashWithIndifferentAccess
-    assert_not @params.to_h.is_a? ActionController::Parameters
+    assert @params.to_unsafe_h.is_a? ActiveSupport::HashWithIndifferentAccess
+    assert_not @params.to_unsafe_h.is_a? ActionController::Parameters
+  end
+
+  test "to_unsafe_h returns unfiltered params even after accessing few keys" do
+    params = ActionController::Parameters.new("f"=>{"language_facet"=>["Tibetan"]})
+    expected = {"f"=>{"language_facet"=>["Tibetan"]}}
+
+    assert params['f'].is_a? ActionController::Parameters
+    assert_equal expected, params.to_unsafe_h
   end
 
   test "to_h only deep dups Ruby collections" do
@@ -324,5 +332,11 @@ class ParametersPermitTest < ActiveSupport::TestCase
     params = ActionController::Parameters.new(companies: [ company, :acme ])
     assert_equal({ 'companies' => [ company, :acme ] }, params.to_unsafe_h)
     assert_not company.dupped
+  end
+
+  test "include? returns true when the key is present" do
+    assert @params.include? :person
+    assert @params.include? 'person'
+    assert_not @params.include? :gorilla
   end
 end

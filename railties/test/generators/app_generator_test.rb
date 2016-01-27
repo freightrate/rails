@@ -26,6 +26,7 @@ DEFAULT_APP_FILES = %w(
   config/environments
   config/initializers
   config/locales
+  config/cable.yml
   db
   lib
   lib/tasks
@@ -149,6 +150,12 @@ class AppGeneratorTest < Rails::Generators::TestCase
     run_generator
 
     assert_file("config/initializers/cookies_serializer.rb", /Rails\.application\.config\.action_dispatch\.cookies_serializer = :json/)
+  end
+
+  def test_new_application_not_include_api_initializers
+    run_generator
+
+    assert_no_file 'config/initializers/cors.rb'
   end
 
   def test_rails_update_keep_the_cookie_serializer_if_it_is_already_configured
@@ -355,6 +362,13 @@ class AppGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  def test_generator_has_assets_gems
+    run_generator
+
+    assert_gem 'sass-rails'
+    assert_gem 'uglifier'
+  end
+
   def test_generator_if_skip_sprockets_is_given
     run_generator [destination_root, "--skip-sprockets"]
     assert_no_file "config/initializers/assets.rb"
@@ -379,9 +393,34 @@ class AppGeneratorTest < Rails::Generators::TestCase
   def test_generator_if_skip_action_cable_is_given
     run_generator [destination_root, "--skip-action-cable"]
     assert_file "config/application.rb", /#\s+require\s+["']action_cable\/engine["']/
-    assert_no_file "config/redis/cable.yml"
+    assert_no_file "config/cable.yml"
     assert_no_file "app/assets/javascripts/cable.coffee"
     assert_no_file "app/channels"
+    assert_file "app/views/layouts/application.html.erb" do |content|
+      assert_no_match(/action_cable_meta_tag/, content)
+    end
+    assert_file "Gemfile" do |content|
+      assert_no_match(/em-hiredis/, content)
+      assert_no_match(/redis/, content)
+    end
+  end
+
+  def test_generator_if_skip_action_cable_is_given_for_an_api_app
+    run_generator [destination_root, "--skip-action-cable", "--api"]
+    assert_file "config/application.rb", /#\s+require\s+["']action_cable\/engine["']/
+    assert_no_file "config/cable.yml"
+    assert_no_file "app/assets/javascripts/cable.coffee"
+    assert_no_file "app/channels"
+    assert_file "Gemfile" do |content|
+      assert_no_match(/em-hiredis/, content)
+      assert_no_match(/redis/, content)
+    end
+  end
+
+  def test_action_cable_redis_gems
+    run_generator
+    assert_gem 'em-hiredis'
+    assert_gem 'redis'
   end
 
   def test_inclusion_of_javascript_runtime

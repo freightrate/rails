@@ -1,3 +1,27 @@
+*   Create a new `ActiveSupport::SafeBuffer` instance when `content_for` is flushed.
+
+    Fixes #19890
+
+    *Yoong Kang Lim*
+
+*   Fix `collection_radio_buttons` hidden_field name and make it appear
+    before the actual input radio tags to make the real value override
+    the hidden when passed.
+
+    Fixes #22773.
+
+    *Santiago Pastorino*
+
+*   `ActionView::TestCase::Controller#params` returns an instance of
+    `ActionController::Parameters`.
+
+    *Justin Coyne*
+
+*   Fix regression in `submit_tag` when a symbol is used as label argument.
+
+    *Yuuji Yaginuma*
+
+
 ## Rails 5.0.0.beta1 (December 18, 2015) ##
 
 *   `I18n.translate` helper will wrap the missing translation keys
@@ -97,7 +121,7 @@
     Which could happen if the rendering was done directly in the controller
     and not in a template.
 
-    Fixes #20535
+    Fixes #20535.
 
     *Roque Pinel*
 
@@ -106,7 +130,7 @@
 
     *Dov Murik*
 
-*   Raise an ArgumentError when a false value for `include_blank` is passed to a
+*   Raise an `ArgumentError` when a false value for `include_blank` is passed to a
     required select field (to comply with the HTML5 spec).
 
     *Grey Baker*
@@ -124,7 +148,7 @@
 *   `translate` should handle `raise` flag correctly in case of both main and default
     translation is missing.
 
-    Fixes #19967
+    Fixes #19967.
 
     *Bernard Potocki*
 
@@ -146,7 +170,7 @@
 *   `translate` should accept nils as members of the `:default`
     parameter without raising a translation missing error.
 
-    Fixes #19419
+    Fixes #19419.
 
     *Justin Coyne*
 

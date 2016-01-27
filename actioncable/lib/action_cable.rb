@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2015 Basecamp, LLC
+# Copyright (c) 2015-2016 Basecamp, LLC
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -47,4 +47,5 @@ module ActionCable
   autoload :Connection
   autoload :Channel
   autoload :RemoteConnections
+  autoload :SubscriptionAdapter
 end

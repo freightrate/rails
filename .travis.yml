@@ -25,6 +25,7 @@ env:
     - "GEM=guides"
 rvm:
   - 2.2.4
+  - 2.3.0
   - ruby-head
 matrix:
   allow_failures:
@@ -48,4 +49,4 @@ services:
   - redis
   - rabbitmq
 addons:
-  postgresql: "9.3"
+  postgresql: "9.4"

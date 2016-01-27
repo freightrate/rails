@@ -57,7 +57,7 @@ module Rails
       directory 'app'
 
       keep_file  'app/assets/images'
-      keep_file  'app/assets/javascripts/channels' unless options[:skip_action_cable]
+      empty_directory_with_keep_file 'app/assets/javascripts/channels' unless options[:skip_action_cable]
 
       keep_file  'app/controllers/concerns'
       keep_file  'app/models/concerns'
@@ -78,11 +78,11 @@ module Rails
         template "application.rb"
         template "environment.rb"
         template "secrets.yml"
+        template "cable.yml" unless options[:skip_action_cable]
 
         directory "environments"
         directory "initializers"
         directory "locales"
-        directory "redis" unless options[:skip_action_cable]
       end
     end
 
@@ -315,9 +315,10 @@ module Rails
 
       def delete_action_cable_files_skipping_action_cable
         if options[:skip_action_cable]
-          remove_file 'config/redis/cable.yml'
+          remove_file 'config/cable.yml'
           remove_file 'app/assets/javascripts/cable.coffee'
           remove_dir 'app/channels'
+          gsub_file 'app/views/layouts/application.html.erb', /action_cable_meta_tag/, '' unless options[:api]
         end
       end
 
@@ -326,6 +327,13 @@ module Rails
           remove_file 'config/initializers/session_store.rb'
           remove_file 'config/initializers/cookies_serializer.rb'
           remove_file 'config/initializers/request_forgery_protection.rb'
+          remove_file 'config/initializers/per_form_csrf_tokens.rb'
+        end
+      end
+
+      def delete_api_initializers
+        unless options[:api]
+          remove_file 'config/initializers/cors.rb'
         end
       end
 

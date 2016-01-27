@@ -5,18 +5,27 @@ module ActiveSupport
   class Logger < ::Logger
     include LoggerSilence
 
-    attr_accessor :broadcast_messages
+    # Returns true if the logger destination matches one of the sources
+    #
+    #   logger = Logger.new(STDOUT)
+    #   ActiveSupport::Logger.logger_outputs_to?(logger, STDOUT)
+    #   # => true
+    def self.logger_outputs_to?(logger, *sources)
+      logdev = logger.instance_variable_get("@logdev")
+      logger_source = logdev.dev if logdev.respond_to?(:dev)
+      sources.any? { |source| source == logger_source }
+    end
 
     # Broadcasts logs to multiple loggers.
     def self.broadcast(logger) # :nodoc:
       Module.new do
         define_method(:add) do |*args, &block|
-          logger.add(*args, &block) if broadcast_messages
+          logger.add(*args, &block)
           super(*args, &block)
         end
 
         define_method(:<<) do |x|
-          logger << x if broadcast_messages
+          logger << x
           super(x)
         end
 
@@ -45,7 +54,20 @@ module ActiveSupport
     def initialize(*args)
       super
       @formatter = SimpleFormatter.new
-      @broadcast_messages = true
+      after_initialize if respond_to? :after_initialize
+    end
+
+    def add(severity, message = nil, progname = nil, &block)
+      return true if @logdev.nil? || (severity || UNKNOWN) < level
+      super
+    end
+
+    Logger::Severity.constants.each do |severity|
+      class_eval(<<-EOT, __FILE__, __LINE__ + 1)
+        def #{severity.downcase}?                # def debug?
+          Logger::#{severity} >= level           #   DEBUG >= level
+        end                                      # end
+      EOT
     end
 
     # Simple formatter which only displays the message.
